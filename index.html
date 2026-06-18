@@ -1,0 +1,376 @@
+<!doctype html>
+<html class="dark" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Spatial Classroom | Immersive Learning</title>
+
+		<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+			rel="stylesheet"
+		/>
+
+		<script id="tailwind-config">
+			tailwind.config = {
+				darkMode: "class",
+				theme: {
+					extend: {
+						colors: {
+							// Brand / modes
+							inkvoid: "#0A0A0C",
+							studio: "#FFFFFF",
+							slateink: "#18181B",
+
+							// Retain Stitch palette (trimmed to essentials used)
+							"on-surface-variant": "#c4c7c8",
+							"surface-container": "#201f1f",
+							"surface-container-high": "#2a2a2a",
+							surface: "#141313",
+							outline: "#8e9192",
+						},
+						spacing: {
+							"inner-padding": "24px",
+							"stack-gap": "24px",
+							"glass-margin": "16px",
+							"container-padding": "40px",
+						},
+						fontFamily: {
+							body: ["Inter"],
+						},
+					},
+				},
+			};
+		</script>
+
+		<style>
+			:root {
+				--glass-bg: rgba(255, 255, 255, 0.03);
+				--glass-border: rgba(255, 255, 255, 0.1);
+				--glass-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+			}
+			.dark {
+				--glass-bg: rgba(255, 255, 255, 0.02);
+				--glass-border: rgba(255, 255, 255, 0.08);
+			}
+
+			body {
+				font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+			}
+
+			.glass-panel {
+				backdrop-filter: blur(20px);
+				background: var(--glass-bg);
+				border: 1px solid var(--glass-border);
+				box-shadow: var(--glass-shadow);
+				border-radius: 1rem;
+				transition: opacity 300ms ease, transform 300ms ease, background 300ms ease;
+			}
+			.glass-button {
+				backdrop-filter: blur(8px);
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				transition: background 200ms ease, transform 200ms ease, opacity 300ms ease;
+			}
+			.glass-button:hover {
+				background: rgba(255, 255, 255, 0.12);
+				transform: translateY(-1px);
+			}
+			.glass-button:active {
+				transform: scale(0.98);
+			}
+
+			.progress-track {
+				height: 4px;
+				background: rgba(255, 255, 255, 0.08);
+				border-radius: 999px;
+				overflow: hidden;
+			}
+			.progress-fill {
+				height: 100%;
+				background: #ffffff;
+				box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+				transition: width 500ms ease-out;
+				width: 0%;
+			}
+
+			/* Blackboard fade at the top edge (towards Leo). Stronger than Stitch "fade-top" */
+			.blackboard-fade {
+				-webkit-mask-image: linear-gradient(to top, black 65%, transparent 100%);
+				mask-image: linear-gradient(to top, black 65%, transparent 100%);
+			}
+
+			/* Custom scrollbar */
+			::-webkit-scrollbar {
+				width: 6px;
+			}
+			::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			::-webkit-scrollbar-thumb {
+				background: rgba(255, 255, 255, 0.12);
+				border-radius: 999px;
+			}
+
+			.material-symbols-outlined {
+				font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+			}
+
+			/* Leo "pose" states (visual-only; app.js toggles these) */
+			#leoPortrait {
+				transform-origin: 50% 85%;
+				transition: transform 350ms ease, filter 350ms ease;
+			}
+			.leo-sit #leoPortrait {
+				transform: translateY(12px) scale(0.98);
+				filter: saturate(0.95);
+			}
+			.leo-stand #leoPortrait {
+				transform: translateY(0) scale(1);
+			}
+			.leo-jump #leoPortrait {
+				transform: translateY(-18px) rotate(-2deg) scale(1.02);
+				filter: contrast(1.05);
+			}
+
+			/* Sidebar dimming (app.js toggles .dim-sidebars on body) */
+			body.dim-sidebars #leftSidebar,
+			body.dim-sidebars #rightSidebar {
+				opacity: 0.4;
+			}
+		</style>
+	</head>
+
+	<body
+		class="bg-studio dark:bg-inkvoid text-slateink dark:text-white min-h-screen overflow-hidden flex flex-col transition-all duration-300"
+	>
+		<!-- Top Navigation -->
+		<header
+			class="flex justify-between items-center w-full z-50 pt-glass-margin px-container-padding fixed top-0 left-0"
+		>
+			<div class="font-semibold tracking-tight text-xl">Spatial Classroom</div>
+
+			<nav class="hidden md:flex gap-inner-padding items-center">
+				<a class="border-b-2 border-white/70 pb-1 cursor-pointer" href="#">Classroom</a>
+				<a
+					class="text-slateink/70 dark:text-on-surface-variant hover:brightness-125 transition-all cursor-pointer"
+					href="#"
+					>Resources</a
+				>
+				<a
+					class="text-slateink/70 dark:text-on-surface-variant hover:brightness-125 transition-all cursor-pointer"
+					href="#"
+					>Archive</a
+				>
+			</nav>
+
+			<div class="flex items-center gap-4">
+				<button
+					id="themeToggleBtn"
+					class="glass-button w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+					type="button"
+					aria-label="Toggle theme"
+				>
+					<span class="material-symbols-outlined dark:hidden">dark_mode</span>
+					<span class="material-symbols-outlined hidden dark:block">light_mode</span>
+				</button>
+
+				<label
+					for="pdfFileInput"
+					class="glass-button w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+					title="Upload PDF context"
+				>
+					<span class="material-symbols-outlined">add</span>
+				</label>
+				<input id="pdfFileInput" class="hidden" type="file" accept="application/pdf" />
+
+				<div
+					class="glass-button w-10 h-10 rounded-full overflow-hidden cursor-pointer border border-white/20"
+					title="Profile"
+				>
+					<img
+						alt="Profile"
+						class="w-full h-full object-cover"
+						src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdkPgXaEr8olCb_Z0C4XBeetzkN-wCv903yg90ALfW7EerrPx3GjiCOZLDJl-3r7tcRy-4iCvYcE_jv1_Fet5Mpp_W0RxDuXnc0FkYh7DxYMjvH2oNvr26r8RENXRQ3Z_GScmmLP3rdLcv2g_Bj_D9aPdMouBprbECwU4R-mmjlTDyLxSfUUmjmlsiDoWnKvt59ECkiT8992afTvTGx6mjSVH__gb1YldiFIYCZkFXk2npHQc4ILj5vuym8diq1_UVnPkj6SeNKZo"
+					/>
+				</div>
+			</div>
+		</header>
+
+		<!-- Main Workspace -->
+		<main
+			class="flex-1 flex flex-col md:grid md:grid-cols-12 gap-6 p-glass-margin pt-24 pb-6 overflow-y-auto md:overflow-hidden relative"
+		>
+			<!-- Left Column -->
+			<aside id="leftSidebar" class="col-span-12 md:col-span-3 flex flex-col gap-glass-margin z-40">
+				<!-- Sources -->
+				<section class="glass-panel p-inner-padding overflow-y-auto flex flex-col">
+					<div class="flex justify-between items-center mb-4">
+						<h3
+							class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant flex items-center gap-2"
+						>
+							<span class="material-symbols-outlined text-[18px]">backpack</span>
+							Sources
+						</h3>
+						<label
+							for="pdfFileInput"
+							class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
+							title="Upload PDF"
+						>
+							<span class="material-symbols-outlined text-[18px]">add</span>
+						</label>
+					</div>
+
+					<ul id="sourcesList" class="space-y-3">
+						<li class="glass-button p-3 rounded-lg flex items-center gap-3">
+							<span class="material-symbols-outlined">description</span>
+							<span class="truncate">Upload a PDF to provide lesson context</span>
+						</li>
+					</ul>
+
+					<div id="contextStatus" class="mt-4 text-xs text-slateink/70 dark:text-on-surface-variant">
+						Context: none loaded
+					</div>
+				</section>
+
+				<!-- Teacher Co-Pilot -->
+				<section class="glass-panel p-inner-padding flex flex-col flex-1">
+					<h3
+						class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant mb-4 flex items-center gap-2"
+					>
+						<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+						Teacher Co-Pilot
+					</h3>
+
+					<div
+						id="copilotHint"
+						class="text-xs text-slateink/70 dark:text-on-surface-variant italic border-l-2 border-white/20 pl-3 mb-4"
+					>
+						Ask for a quick analogy or hint.
+					</div>
+
+					<form id="copilotForm" class="mt-auto">
+						<input
+							id="copilotInput"
+							class="w-full bg-slateink/5 dark:bg-white/5 border border-slateink/10 dark:border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-white/40 transition-colors text-slateink dark:text-white placeholder:text-slateink/50 dark:placeholder:text-white/50"
+							placeholder="Secretly ask Groq..."
+							type="text"
+							autocomplete="off"
+						/>
+					</form>
+				</section>
+			</aside>
+
+			<section class="col-span-12 md:col-span-6 flex flex-col gap-glass-margin z-10 relative min-h-[650px]">
+				<!-- THE STUDY ROOM CENTER COLUMN GRID WRAPPER -->
+				<div class="flex flex-col h-[calc(100vh-2rem)] md:h-full justify-between p-4 relative overflow-hidden">
+				  
+				  <!-- TOP HALF: Leo's Animation Canvas (Fixed, Non-Scrolling) -->
+				  <div class="h-1/2 min-h-[220px] md:min-h-[280px] flex flex-col items-center justify-center relative w-full overflow-hidden bg-transparent">
+				    <!-- Ensure the avatar wrapper stays pristine and 100% transparent -->
+				    <div id="leo-character-sprite" class="w-48 h-64 bg-transparent select-none transition-all duration-300"></div>
+				    <span class="text-xs font-mono text-neutral-400 mt-2 tracking-wide">Student: Leo</span>
+				  </div>
+
+				  <!-- BOTTOM HALF: The Isolated Blackboard Chat & Fixed Input Box -->
+				  <div class="h-1/2 flex flex-col justify-between w-full border-t border-neutral-800/60 pt-3 bg-transparent overflow-hidden">
+				    
+				    <!-- LIVE CHAT CONTAINER: Enforced Scrolling Window Bounds -->
+				    <div id="classroom-chat-scroller" class="overflow-y-auto overflow-x-hidden flex-1 space-y-4 mb-3 pr-2 scrollbar-thin scrollbar-thumb-neutral-800/80 scroll-smooth" style="max-height: calc(100% - 60px);">
+				      <!-- Existing loop logic inside src/app.js will dynamically append chat message nodes here -->
+				    </div>
+				    
+				    <!-- FIXED INPUT DOCK: Anchored Base Component Container -->
+				    <div class="w-full mt-auto bg-neutral-950/80 backdrop-blur-md border border-neutral-800 rounded-xl p-2 flex items-center gap-2 relative z-10 shadow-lg">
+				      <input type="text" id="teacher-message-input" placeholder="Teacher Input: Type your lesson here..." class="w-full bg-transparent text-white text-sm p-2 outline-none placeholder-neutral-500" />
+				      <button id="send-lesson-btn" class="bg-neutral-800 hover:bg-neutral-700 text-white font-semibold tracking-wide text-xs px-5 py-2.5 rounded-lg transition-all duration-200 uppercase">Send</button>
+				    </div>
+
+				  </div>
+				</div>
+			</section>
+
+			<!-- Right Column -->
+			<aside id="rightSidebar" class="col-span-12 md:col-span-3 flex flex-col gap-glass-margin z-40">
+				<section class="glass-panel p-inner-padding flex flex-col gap-stack-gap">
+					<div>
+						<div class="flex justify-between items-center mb-3">
+							<span class="text-xs text-slateink/70 dark:text-on-surface-variant">UNDERSTANDING</span>
+							<span id="understandingPctText" class="text-xs">0%</span>
+						</div>
+						<div class="progress-track">
+							<div id="understandingBar" class="progress-fill" style="width: 0%"></div>
+						</div>
+					</div>
+
+					<div>
+						<div class="flex justify-between items-center mb-3">
+							<span class="text-xs text-slateink/70 dark:text-on-surface-variant">PATIENCE METER</span>
+							<span id="patiencePctText" class="text-xs">80%</span>
+						</div>
+						<div class="progress-track">
+							<div id="patienceBar" class="progress-fill" style="width: 80%; opacity: 0.85"></div>
+						</div>
+					</div>
+
+					<div class="pt-4 border-t border-white/10">
+						<span class="text-xs text-slateink/70 dark:text-on-surface-variant block mb-2">FOCUS STATE</span>
+						<div class="flex flex-wrap gap-2">
+							<span
+								id="focusChip"
+								class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slateink dark:text-white"
+								>Curious</span
+							>
+							<span
+								id="poseChip"
+								class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slateink/70 dark:text-on-surface-variant"
+								>Standing</span
+							>
+						</div>
+					</div>
+				</section>
+
+				<section class="glass-panel p-inner-padding flex flex-col gap-6">
+					<div>
+						<h3 class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant mb-4">
+							LIVE METRICS
+						</h3>
+						<div class="space-y-3 text-sm">
+							<div class="flex items-center justify-between">
+								<span class="text-slateink/70 dark:text-on-surface-variant">Active Time</span>
+								<span id="activeTimeText" class="font-semibold">00:00</span>
+							</div>
+							<div class="flex items-center justify-between">
+								<span class="text-slateink/70 dark:text-on-surface-variant">Knowledge Gain</span>
+								<span id="knowledgeGainText" class="font-semibold">+0.0 pts</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="pt-4 border-t border-white/10">
+						<h3
+							class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant mb-3 flex items-center gap-2"
+						>
+							<span class="material-symbols-outlined text-[16px]">terminal</span>
+							SYSTEM TERMINAL
+						</h3>
+
+						<div
+							id="systemTerminal"
+							class="space-y-2 font-mono text-[11px] leading-4 text-slateink/70 dark:text-white/70 max-h-48 overflow-y-auto"
+							aria-label="System terminal"
+						></div>
+					</div>
+				</section>
+			</aside>
+		</main>
+
+		<script type="module" src="/src/app.js"></script>
+	</body>
+</html>
