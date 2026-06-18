@@ -81,10 +81,6 @@ const els = {
 
 	focusChip: $("#focusChip"),
 	poseChip: $("#poseChip"),
-
-	orderSitBtn: $("#orderSitBtn"),
-	orderStandBtn: $("#orderStandBtn"),
-	orderDeskBtn: $("#orderDeskBtn"),
 };
 
 function nowHHMMSS() {
@@ -351,26 +347,6 @@ setInterval(() => {
 	if (inactive || bored) triggerDistraction();
 }, 45_000);
 
-// Mechanical teacher orders
-function applyTeacherOrder(order) {
-	if (order === "sit") {
-		setLeoPose("sit");
-		setLeoEmotion("thinking");
-		setFocusChip("Reset");
-		appendTerminal("ORDER", "Sit");
-	} else if (order === "stand") {
-		setLeoPose("stand");
-		setLeoEmotion("thinking");
-		setFocusChip("Focused");
-		appendTerminal("ORDER", "Stand");
-	} else if (order === "desk") {
-		setLeoPose("desk");
-		setLeoEmotion("standing_on_desk");
-		setFocusChip("Chaotic");
-		appendTerminal("ORDER", "Jump on Desk");
-		appendBlackboard("leo", "I’m on the desk. I can see the concepts better from up here!", "warn");
-	}
-}
 
 // PDF extraction
 async function extractPdfText(file) {
@@ -482,9 +458,6 @@ els.copilotForm.addEventListener("submit", async (e) => {
 	await runCopilotHint(q);
 });
 
-els.orderSitBtn.addEventListener("click", () => applyTeacherOrder("sit"));
-els.orderStandBtn.addEventListener("click", () => applyTeacherOrder("stand"));
-els.orderDeskBtn.addEventListener("click", () => applyTeacherOrder("desk"));
 
 els.pdfFileInput.addEventListener("change", async (e) => {
 	const file = e.target.files?.[0];
