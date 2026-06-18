@@ -295,6 +295,25 @@ async function runCopilotHint(query) {
 	if (state.inFlight.copilot) return;
 	state.inFlight.copilot = true;
 
+	const scroller = document.getElementById("copilot-chat-scroller");
+
+	// Hide the initial placeholder if present
+	if (els.copilotHint) {
+		els.copilotHint.style.display = "none";
+	}
+
+	// Append user question card
+	const userMsg = document.createElement("div");
+	userMsg.className = "text-right my-2";
+	userMsg.innerHTML = `
+		<span class="inline-block bg-white/10 dark:bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-slateink dark:text-white max-w-[90%] text-left break-words"></span>
+	`;
+	userMsg.querySelector("span").textContent = query;
+	if (scroller) {
+		scroller.appendChild(userMsg);
+		scrollToCopilotBottom();
+	}
+
 	try {
 		appendTerminal("REQ", "Copilot pipeline");
 		const text = await postChat({
@@ -304,11 +323,30 @@ async function runCopilotHint(query) {
 		});
 		const hint = typeof text === "string" ? text : JSON.stringify(text);
 
-		els.copilotHint.textContent = hint;
-		appendTerminal("OK", "Copilot hint updated");
+		// Append copilot response card
+		const assistantMsg = document.createElement("div");
+		assistantMsg.className = "text-left my-2";
+		assistantMsg.innerHTML = `
+			<span class="inline-block bg-slateink/10 dark:bg-white/10 border border-slateink/10 dark:border-white/10 rounded-lg px-2.5 py-1.5 text-slateink/90 dark:text-neutral-200 max-w-[90%] break-words"></span>
+		`;
+		assistantMsg.querySelector("span").textContent = hint;
+		if (scroller) {
+			scroller.appendChild(assistantMsg);
+			scrollToCopilotBottom();
+		}
+		appendTerminal("OK", "Copilot response appended");
 	} catch (err) {
 		appendTerminal("ERR", err?.message || String(err));
-		els.copilotHint.textContent = "Copilot unavailable right now.";
+		const errMsg = document.createElement("div");
+		errMsg.className = "text-left my-2";
+		errMsg.innerHTML = `
+			<span class="inline-block bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg px-2.5 py-1.5 max-w-[90%] break-words"></span>
+		`;
+		errMsg.querySelector("span").textContent = `Copilot error: ${err?.message || err}`;
+		if (scroller) {
+			scroller.appendChild(errMsg);
+			scrollToCopilotBottom();
+		}
 	} finally {
 		state.inFlight.copilot = false;
 	}
@@ -517,5 +555,12 @@ function scrollToClassroomBottom() {
   if (chatScroller) {
     // Force immediate UI repaint baseline realignment to absolute scroll envelope height
     chatScroller.scrollTop = chatScroller.scrollHeight;
+  }
+}
+
+function scrollToCopilotBottom() {
+  const copilotScroller = document.getElementById("copilot-chat-scroller"); // Ensure this ID is added to your left column scroll wrapper
+  if (copilotScroller) {
+    copilotScroller.scrollTop = copilotScroller.scrollHeight;
   }
 }

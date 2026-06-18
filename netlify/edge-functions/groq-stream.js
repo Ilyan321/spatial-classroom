@@ -181,13 +181,13 @@ ${context || "(no context provided)"}
 			return json(normalized, 200, corsHeaders());
 		}
 
-		// Copilot pipeline: brief, high-impact hint as plain text
-		const system = `
-You are a stealthy Teacher Co-Pilot.
-Goal: help the teacher explain complex ideas simply.
-Return ONLY a brief 1-2 sentence hint or real-world analogy.
-Do NOT output JSON. Do NOT include bullet points. Do NOT include extra commentary.
-`.trim();
+		// Copilot pipeline: conversational teacher assistant
+		let systemPrompt = "";
+		if (pipeline === "copilot") {
+			systemPrompt = `You are an advanced, elite Teacher Co-Pilot conversational assistant. 
+Your goal is to help the teacher brainstorm deep analogies, hidden insights, pedagogical strategies, and content explanations for their student. 
+Interact naturally like a high-level educational AI advisor. Keep responses direct, engaging, and brief (2-4 concise sentences max), avoiding excessive markdown format formatting.`;
+		}
 
 		const user = `
 Teacher request:
@@ -200,7 +200,7 @@ ${context || "(no context provided)"}
 		const hint = await groqChat({
 			apiKey,
 			messages: [
-				{ role: "system", content: system },
+				{ role: "system", content: systemPrompt },
 				{ role: "user", content: user },
 			],
 		});

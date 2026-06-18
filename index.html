@@ -240,19 +240,21 @@
 				</section>
 
 				<!-- Teacher Co-Pilot -->
-				<section class="glass-panel p-inner-padding flex flex-col flex-1">
+				<section class="glass-panel p-inner-padding flex flex-col justify-between h-[300px] overflow-hidden">
 					<h3
-						class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant mb-4 flex items-center gap-2"
+						class="text-xs uppercase tracking-widest text-slateink/70 dark:text-on-surface-variant mb-2 flex items-center gap-2"
 					>
 						<span class="material-symbols-outlined text-[18px]">lightbulb</span>
 						Teacher Co-Pilot
 					</h3>
 
-					<div
-						id="copilotHint"
-						class="text-xs text-slateink/70 dark:text-on-surface-variant italic border-l-2 border-white/20 pl-3 mb-4"
-					>
-						Ask for a quick analogy or hint.
+					<div id="copilot-chat-scroller" class="flex-1 overflow-y-auto max-h-[180px] mb-2 pr-1 space-y-2 text-xs">
+						<div
+							id="copilotHint"
+							class="text-slateink/70 dark:text-on-surface-variant italic border-l-2 border-white/20 pl-3"
+						>
+							Ask for a quick analogy or hint.
+						</div>
 					</div>
 
 					<form id="copilotForm" class="mt-auto">
@@ -269,10 +271,10 @@
 
 			<section class="col-span-12 md:col-span-6 flex flex-col gap-glass-margin z-10 relative min-h-[650px]">
 				<!-- THE STUDY ROOM CENTER COLUMN GRID WRAPPER -->
-				<div class="flex flex-col h-[calc(100vh-2rem)] md:h-full justify-between p-4 relative overflow-hidden">
+				<div class="flex flex-col h-[calc(100vh-5rem)] justify-between p-4 relative overflow-hidden">
 				  
 				  <!-- TOP HALF: Leo's Animation Canvas (Fixed, Non-Scrolling) -->
-				  <div class="h-1/2 min-h-[220px] md:min-h-[280px] flex flex-col items-center justify-center relative w-full overflow-hidden bg-transparent">
+				  <div class="h-1/2 overflow-hidden flex flex-col items-center justify-center relative w-full bg-transparent">
 				    <!-- Ensure the avatar wrapper stays pristine and 100% transparent -->
 				    <div id="leo-character-sprite" class="w-48 h-64 bg-transparent select-none transition-all duration-300"></div>
 				    <span class="text-xs font-mono text-neutral-400 mt-2 tracking-wide">Student: Leo</span>
@@ -282,7 +284,7 @@
 				  <div class="h-1/2 flex flex-col justify-between w-full border-t border-neutral-800/60 pt-3 bg-transparent overflow-hidden">
 				    
 				    <!-- LIVE CHAT CONTAINER: Enforced Scrolling Window Bounds -->
-				    <div id="classroom-chat-scroller" class="overflow-y-auto overflow-x-hidden flex-1 space-y-4 mb-3 pr-2 scrollbar-thin scrollbar-thumb-neutral-800/80 scroll-smooth" style="max-height: calc(100% - 60px);">
+				    <div id="classroom-chat-scroller" class="flex-1 overflow-y-auto overflow-x-hidden space-y-4 mb-3 pr-2 scroll-smooth" style="max-height: calc(100% - 60px);">
 				      <!-- Existing loop logic inside src/app.js will dynamically append chat message nodes here -->
 				    </div>
 				    
